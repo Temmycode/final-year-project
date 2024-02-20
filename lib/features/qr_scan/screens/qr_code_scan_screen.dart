@@ -3,7 +3,6 @@ import 'package:flutter_application_3/features/qr_scan/widgets/scan_successful_v
 import 'package:flutter_application_3/shared/widgets/back_button.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import '../../../shared/widgets/scan_qr_code_view.dart';
 
 class QrCodeScanScreen extends ConsumerWidget {
   const QrCodeScanScreen({super.key});

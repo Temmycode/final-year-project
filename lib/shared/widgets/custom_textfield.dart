@@ -30,6 +30,8 @@ class _CustomTextFieldState extends State<CustomTextField> {
         borderRadius: BorderRadius.circular(8.r),
       ),
       child: TextFormField(
+        keyboardType:
+            widget.isPassword ? TextInputType.text : TextInputType.emailAddress,
         controller: widget.controller,
         obscureText: widget.isPassword && !isVisible ? true : false,
         obscuringCharacter: "*",
