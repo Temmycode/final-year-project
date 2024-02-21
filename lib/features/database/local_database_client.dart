@@ -7,7 +7,7 @@ class LocalDatabaseClient {
     String tablename,
   ) async {
     await database.execute(
-      """CREATE TABLE $tablename(
+      """CREATE TABLE activity(
         id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
         title TEXT NOT NULL,
         imageUrl TEXT NOT NULL,
@@ -15,6 +15,18 @@ class LocalDatabaseClient {
         createdAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP)
     """,
     );
+    await database.execute(""" CREATE TABLE attendance(
+        id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+        activityId INTEGER REFERENCES activity(id)
+        createdAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+      )
+    """);
+    await database.execute(""" CREATE TABLE student(
+      matricNo INTEGER PRIMARY KEY,
+      firstName TEXT NOT NULL,
+      lastName TEXT NOT NULL,
+      department TEXT NOT NULL,
+    )""");
   }
 
   static Future<sql.Database> db() async {
@@ -22,8 +34,7 @@ class LocalDatabaseClient {
       'babcock_attendance',
       version: 1,
       onCreate: (db, version) async {
-        await createTable(db, "activities");
-        await createTable(db, "attendance");
+        await createTable(db, "activity");
       },
     );
   }
@@ -37,7 +48,7 @@ class LocalDatabaseClient {
       "type": activity.type
     };
     await db.insert(
-      'activities',
+      'activity',
       data,
       conflictAlgorithm: sql.ConflictAlgorithm.replace,
     );
@@ -48,7 +59,7 @@ class LocalDatabaseClient {
   }) async {
     final db = await LocalDatabaseClient.db();
     final data = await db.query(
-      "activities",
+      "activity",
       where: "type = ?",
       whereArgs: [type],
       orderBy: "id",
@@ -59,5 +70,19 @@ class LocalDatabaseClient {
         )
         .toList();
     return activities;
+  }
+
+  static Future<bool> deleteActivity({required String title}) async {
+    try {
+      final db = await LocalDatabaseClient.db();
+      await db.delete(
+        "activity",
+        where: "title = ?",
+        whereArgs: [title],
+      );
+      return true;
+    } catch (e) {
+      return false;
+    }
   }
 }

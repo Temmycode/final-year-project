@@ -1,7 +1,9 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_3/config/colors/app_colors.dart';
-import 'package:flutter_application_3/features/qr_scan/screens/qr_code_scan_screen.dart';
+import 'package:flutter_application_3/features/database/local_database_client.dart';
+import 'package:flutter_application_3/features/home/screens/home_screen.dart';
+import 'package:flutter_application_3/shared/widgets/scan_qr_code_view.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
@@ -82,7 +84,7 @@ class ActivitySelectionScreen extends ConsumerWidget {
               () => Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => const QrCodeScanScreen(),
+                  builder: (context) => const ScanQrCodeView(),
                 ),
               ),
             ),
@@ -94,7 +96,19 @@ class ActivitySelectionScreen extends ConsumerWidget {
             actionButton(
               "Delete Activity",
               AppColors.red1,
-              () {},
+              () async {
+                await LocalDatabaseClient.deleteActivity(title: title)
+                    .whenComplete(
+                  () => Navigator.popUntil(
+                    context,
+                    (route) =>
+                        route ==
+                        MaterialPageRoute(
+                          builder: (context) => const HomeScreen(),
+                        ),
+                  ),
+                );
+              },
             ),
           ],
         ),

@@ -1,12 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_3/config/colors/app_colors.dart';
+import 'package:flutter_application_3/models/student_model.dart';
 import 'package:flutter_application_3/shared/widgets/primary_button.dart';
 import 'package:flutter_application_3/shared/widgets/secondary_button.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class ScanSuccessfulView extends ConsumerWidget {
-  const ScanSuccessfulView({super.key});
+  final Student student;
+  final VoidCallback? onTap;
+  final VoidCallback? done;
+
+  const ScanSuccessfulView({
+    super.key,
+    this.onTap,
+    this.done,
+    required this.student,
+  });
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Ink(
@@ -50,7 +61,7 @@ class ScanSuccessfulView extends ConsumerWidget {
                         ),
                       ),
                       Text(
-                        ":",
+                        ": ",
                         style: TextStyle(
                           fontWeight: FontWeight.w500,
                           fontSize: 16.spMin,
@@ -58,36 +69,7 @@ class ScanSuccessfulView extends ConsumerWidget {
                         ),
                       ),
                       Text(
-                        "John Doe",
-                        style: TextStyle(
-                          fontWeight: FontWeight.w500,
-                          fontSize: 16.spMin,
-                          color: AppColors.grey4,
-                        ),
-                      ),
-                    ],
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        "Name",
-                        style: TextStyle(
-                          fontWeight: FontWeight.w500,
-                          fontSize: 16.spMin,
-                          color: AppColors.grey4,
-                        ),
-                      ),
-                      Text(
-                        ":",
-                        style: TextStyle(
-                          fontWeight: FontWeight.w500,
-                          fontSize: 16.spMin,
-                          color: AppColors.grey4,
-                        ),
-                      ),
-                      Text(
-                        "John Doe",
+                        student.firstName,
                         style: TextStyle(
                           fontWeight: FontWeight.w500,
                           fontSize: 16.spMin,
@@ -100,7 +82,7 @@ class ScanSuccessfulView extends ConsumerWidget {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        "Name",
+                        "Matric No",
                         style: TextStyle(
                           fontWeight: FontWeight.w500,
                           fontSize: 16.spMin,
@@ -108,7 +90,7 @@ class ScanSuccessfulView extends ConsumerWidget {
                         ),
                       ),
                       Text(
-                        ":",
+                        ": ",
                         style: TextStyle(
                           fontWeight: FontWeight.w500,
                           fontSize: 16.spMin,
@@ -116,7 +98,36 @@ class ScanSuccessfulView extends ConsumerWidget {
                         ),
                       ),
                       Text(
-                        "John Doe",
+                        student.matricNo,
+                        style: TextStyle(
+                          fontWeight: FontWeight.w500,
+                          fontSize: 16.spMin,
+                          color: AppColors.grey4,
+                        ),
+                      ),
+                    ],
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        "Dept",
+                        style: TextStyle(
+                          fontWeight: FontWeight.w500,
+                          fontSize: 16.spMin,
+                          color: AppColors.grey4,
+                        ),
+                      ),
+                      Text(
+                        ": ",
+                        style: TextStyle(
+                          fontWeight: FontWeight.w500,
+                          fontSize: 16.spMin,
+                          color: AppColors.grey4,
+                        ),
+                      ),
+                      Text(
+                        student.department,
                         style: TextStyle(
                           fontWeight: FontWeight.w500,
                           fontSize: 16.spMin,
@@ -131,10 +142,10 @@ class ScanSuccessfulView extends ConsumerWidget {
           ),
           SizedBox(height: 40.h),
           PrimaryButton(
-            onTap: () {},
+            onTap: onTap,
             title: "Next Student",
           ),
-          SecondaryButton(onTap: () {}, title: "DONE"),
+          SecondaryButton(onTap: done, title: "DONE"),
           SizedBox(height: 20.h),
         ],
       ),
