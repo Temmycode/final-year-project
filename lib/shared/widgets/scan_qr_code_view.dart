@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter_application_3/features/database/local_database_client.dart';
 import 'package:flutter_application_3/features/qr_scan/widgets/scan_successful_view.dart';
 import 'package:flutter_application_3/models/student_model.dart';
 import 'package:flutter_application_3/shared/widgets/back_button.dart';
@@ -11,7 +12,9 @@ import '../../config/colors/app_colors.dart';
 import '../../config/images/app_images.dart';
 
 class ScanQrCodeView extends StatefulWidget {
-  const ScanQrCodeView({super.key});
+  final String title;
+
+  const ScanQrCodeView({super.key, required this.title});
 
   @override
   State<ScanQrCodeView> createState() => _ScanQrCodeViewState();
@@ -67,6 +70,7 @@ class _ScanQrCodeViewState extends State<ScanQrCodeView>
     controller.scannedDataStream.listen((scanData) {
       setState(() {
         Map<String, dynamic> jsonData = jsonDecode(scanData.code!);
+
         final student = Student.fromJson(jsonData);
         if (!students.contains(student)) {
           students.add(student);
@@ -112,10 +116,15 @@ class _ScanQrCodeViewState extends State<ScanQrCodeView>
                             });
                           },
                           done: () async {
-                            print(students);
-                            Navigator.pop(context);
-
                             // handle the function for the db
+                            for (var student in students) {
+                              await LocalDatabaseClient
+                                  .createAttendanceForActivity(
+                                activityTitle: widget.title,
+                                student: student,
+                              );
+                            }
+                            Navigator.pop(context);
                           },
                           student: students.last,
                         ),

@@ -2,16 +2,19 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_3/config/colors/app_colors.dart';
 import 'package:flutter_application_3/features/database/local_database_client.dart';
-import 'package:flutter_application_3/features/home/screens/home_screen.dart';
+import 'package:flutter_application_3/features/database/providers/get_activity_provider.dart';
 import 'package:flutter_application_3/shared/widgets/scan_qr_code_view.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class ActivitySelectionScreen extends ConsumerWidget {
   final String title;
+  final String type;
+
   const ActivitySelectionScreen({
     super.key,
     required this.title,
+    required this.type,
   });
 
   Widget actionButton(String title, Color color, VoidCallback onTap) {
@@ -76,42 +79,46 @@ class ActivitySelectionScreen extends ConsumerWidget {
       ),
       body: Padding(
         padding: EdgeInsets.symmetric(horizontal: 11.w),
-        child: Column(
-          children: [
-            actionButton(
-              "Take Attendance",
-              AppColors.primary,
-              () => Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const ScanQrCodeView(),
+        child: Consumer(builder: (context, ref, child) {
+          return Column(
+            children: [
+              actionButton(
+                "Take Attendance",
+                AppColors.primary,
+                () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ScanQrCodeView(title: title),
+                  ),
                 ),
               ),
-            ),
-            actionButton(
-              "Generate Report",
-              AppColors.primary,
-              () {},
-            ),
-            actionButton(
-              "Delete Activity",
-              AppColors.red1,
-              () async {
-                await LocalDatabaseClient.deleteActivity(title: title)
-                    .whenComplete(
-                  () => Navigator.popUntil(
-                    context,
-                    (route) =>
-                        route ==
-                        MaterialPageRoute(
-                          builder: (context) => const HomeScreen(),
-                        ),
-                  ),
-                );
-              },
-            ),
-          ],
-        ),
+              actionButton(
+                "Generate Report",
+                AppColors.primary,
+                () async {},
+              ),
+              actionButton(
+                "Delete Activity",
+                AppColors.red1,
+                () async {
+                  await LocalDatabaseClient.deleteActivity(title: title)
+                      .whenComplete(
+                    () {
+                      Navigator.popUntil(
+                        context,
+                        (route) => route.isFirst,
+                      ); // here i am popping back to the first screen
+                      // ignore: unused_result
+                      ref.refresh(
+                        getActivityProvider(type),
+                      ); // refresh the information from the database to be up to date
+                    },
+                  );
+                },
+              ),
+            ],
+          );
+        }),
       ),
     );
   }

@@ -15,13 +15,14 @@ class Student {
   });
 
   Map<String, dynamic> toJson() => {
-        "name": firstName,
+        "firstName": firstName,
+        "lastName": lastName,
         "matricNo": matricNo,
         "department": department,
       };
 
   factory Student.fromJson(Map<String, dynamic> json) => Student(
-        firstName: json["name"],
+        firstName: json["firstName"],
         lastName: json["lastName"],
         matricNo: json["matricNo"],
         department: json["department"],

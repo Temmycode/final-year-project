@@ -85,14 +85,17 @@ class ActivityScreen extends ConsumerWidget {
                         itemBuilder: (context, index) {
                           final activity = activities[index];
                           return ActivityCards(
-                            onTap: () => Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => ActivitySelectionScreen(
-                                  title: activity.title,
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => ActivitySelectionScreen(
+                                    title: activity.title,
+                                    type: type,
+                                  ),
                                 ),
-                              ),
-                            ),
+                              );
+                            },
                             title: activity.title,
                             image: activity.imageUrl,
                           );
