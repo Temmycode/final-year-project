@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_3/config/colors/app_colors.dart';
 import 'package:flutter_application_3/config/images/app_images.dart';
+import 'package:flutter_application_3/features/auth/providers/auth_state_notifier_provider.dart';
 import 'package:flutter_application_3/features/database/local_database_client.dart';
 import 'package:flutter_application_3/features/database/providers/get_activity_provider.dart';
 import 'package:flutter_application_3/models/activity_model.dart';
@@ -20,7 +21,9 @@ class CreateActivityScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final authState = ref.watch(authStateNotifierProvider);
     final controller = ref.watch(createNewActivityControllerProvider);
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -46,8 +49,8 @@ class CreateActivityScreen extends ConsumerWidget {
         actions: [
           Padding(
             padding: EdgeInsets.only(right: 20.w),
-            child: const CircleAvatar(
-              child: Text("M"),
+            child: CircleAvatar(
+              child: Text(authState.user!.username.characters.first),
             ),
           )
         ],

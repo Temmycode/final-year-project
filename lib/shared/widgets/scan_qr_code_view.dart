@@ -2,25 +2,27 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_3/features/database/local_database_client.dart';
+import 'package:flutter_application_3/features/database/providers/get_report_for_activity_provider.dart';
 import 'package:flutter_application_3/features/qr_scan/widgets/scan_successful_view.dart';
 import 'package:flutter_application_3/models/student_model.dart';
 import 'package:flutter_application_3/shared/widgets/back_button.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
 import '../../config/colors/app_colors.dart';
 import '../../config/images/app_images.dart';
 
-class ScanQrCodeView extends StatefulWidget {
+class ScanQrCodeView extends ConsumerStatefulWidget {
   final String title;
 
   const ScanQrCodeView({super.key, required this.title});
 
   @override
-  State<ScanQrCodeView> createState() => _ScanQrCodeViewState();
+  ConsumerState<ScanQrCodeView> createState() => _ScanQrCodeViewState();
 }
 
-class _ScanQrCodeViewState extends State<ScanQrCodeView>
+class _ScanQrCodeViewState extends ConsumerState<ScanQrCodeView>
     with SingleTickerProviderStateMixin {
   bool scan =
       true; // this value is what i use to toggle the scan when a student is scanned
@@ -117,6 +119,7 @@ class _ScanQrCodeViewState extends State<ScanQrCodeView>
                           },
                           done: () async {
                             // handle the function for the db
+                            print(students);
                             for (var student in students) {
                               await LocalDatabaseClient
                                   .createAttendanceForActivity(
@@ -124,6 +127,9 @@ class _ScanQrCodeViewState extends State<ScanQrCodeView>
                                 student: student,
                               );
                             }
+                            ref.refresh(
+                              getReportForActivityProvider(widget.title),
+                            );
                             Navigator.pop(context);
                           },
                           student: students.last,

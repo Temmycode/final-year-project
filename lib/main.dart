@@ -1,11 +1,23 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_application_3/features/auth/providers/is_logged_in_provider.dart';
+import 'package:flutter_application_3/features/auth/screens/login_screen.dart';
 import 'package:flutter_application_3/features/home/screens/home_screen.dart';
+import 'package:flutter_application_3/shared/services/shared_preference_service.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'config/colors/app_colors.dart';
+import 'firebase_options.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+
+  await PreferenceService.init();
+
   runApp(const ProviderScope(child: MyApp()));
 }
 
@@ -32,7 +44,14 @@ class MyApp extends StatelessWidget {
           scaffoldBackgroundColor: Colors.white,
           useMaterial3: true,
         ),
-        home: const HomeScreen(),
+        home: Consumer(builder: (context, ref, child) {
+          final isLoggedIn = ref.watch(isLoggedInProvider);
+          if (isLoggedIn) {
+            return const HomeScreen();
+          } else {
+            return const LoginScreen();
+          }
+        }),
       ),
     );
   }

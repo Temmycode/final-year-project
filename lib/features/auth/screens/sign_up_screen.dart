@@ -1,26 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_3/features/auth/providers/auth_state_notifier_provider.dart';
-import 'package:flutter_application_3/features/auth/screens/sign_up_screen.dart';
+import 'package:flutter_application_3/features/auth/screens/login_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../shared/widgets/custom_textfield.dart';
 import '../../../shared/widgets/primary_button.dart';
 
-class LoginScreen extends ConsumerStatefulWidget {
-  const LoginScreen({super.key});
+class SignupScreen extends ConsumerStatefulWidget {
+  const SignupScreen({super.key});
 
   @override
-  ConsumerState<LoginScreen> createState() => _LoginScreenState();
+  ConsumerState<SignupScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends ConsumerState<LoginScreen> {
+class _LoginScreenState extends ConsumerState<SignupScreen> {
+  final TextEditingController _usernameController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _staffIdController = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   @override
   Widget build(BuildContext context) {
-    final emailController = ref.watch(emailControllerProvider);
-    final passwordController = ref.watch(passwordControllerProvider);
-
     return Scaffold(
       body: SingleChildScrollView(
         keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
@@ -31,9 +32,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             child: Column(
               children: [
                 Padding(
-                  padding: EdgeInsets.only(bottom: 84.h, top: 66.h),
+                  padding: EdgeInsets.only(bottom: 40.h, top: 66.h),
                   child: Text(
-                    "Log In",
+                    "Signup",
                     style: TextStyle(
                       fontSize: 30.spMin,
                       fontWeight: FontWeight.w600,
@@ -45,13 +46,23 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   child: Column(
                     children: [
                       CustomTextField(
-                        controller: emailController,
+                        controller: _usernameController,
+                        hintText: "Username",
+                      ),
+                      SizedBox(height: 30.h),
+                      CustomTextField(
+                        controller: _emailController,
                         hintText: "Email",
                         isEmail: true,
                       ),
-                      SizedBox(height: 46.h),
+                      SizedBox(height: 30.h),
                       CustomTextField(
-                        controller: passwordController,
+                        controller: _staffIdController,
+                        hintText: "Staff ID",
+                      ),
+                      SizedBox(height: 30.h),
+                      CustomTextField(
+                        controller: _passwordController,
                         hintText: "Password",
                         isPassword: true,
                       ),
@@ -61,7 +72,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
                 // the login button
                 Padding(
-                  padding: EdgeInsets.only(bottom: 5.h, top: 320.h),
+                  padding: EdgeInsets.only(bottom: 30.h, top: 200.h),
                   child: Consumer(builder: (context, ref, child) {
                     final authState = ref.watch(authStateNotifierProvider);
                     return PrimaryButton(
@@ -69,14 +80,16 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         if (_formKey.currentState!.validate()) {
                           await ref
                               .read(authStateNotifierProvider.notifier)
-                              .login(
+                              .signup(
                                 context: context,
-                                email: emailController.text,
-                                password: passwordController.text,
+                                username: _usernameController.text,
+                                email: _emailController.text,
+                                staffId: _staffIdController.text,
+                                password: _passwordController.text,
                               );
                         }
                       },
-                      title: "Log In",
+                      title: "Sign Up",
                       isLoading: authState.isLoading,
                     );
                   }),
@@ -86,12 +99,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   padding: EdgeInsets.only(top: 10.h),
                   alignment: Alignment.center,
                   child: TextButton(
-                    onPressed: () => Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) => const SignupScreen(),
-                      ),
-                    ),
-                    child: const Text("Don't have an account? Signup"),
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text("Already Have an account? Login"),
                   ),
                 ),
               ],
@@ -102,11 +111,3 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     );
   }
 }
-
-final emailControllerProvider = Provider.autoDispose<TextEditingController>(
-  (_) => TextEditingController(),
-);
-
-final passwordControllerProvider = Provider.autoDispose<TextEditingController>(
-  (_) => TextEditingController(),
-);

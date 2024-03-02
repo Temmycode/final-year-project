@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_3/config/images/app_images.dart';
+import 'package:flutter_application_3/features/auth/providers/auth_state_notifier_provider.dart';
 import 'package:flutter_application_3/features/home/screens/classroom_screen.dart';
 import 'package:flutter_application_3/shared/widgets/activity_cards.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -8,8 +9,11 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final authState = ref.watch(authStateNotifierProvider);
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -35,8 +39,8 @@ class HomeScreen extends ConsumerWidget {
         actions: [
           Padding(
             padding: EdgeInsets.only(right: 20.w),
-            child: const CircleAvatar(
-              child: Text("M"),
+            child: CircleAvatar(
+              child: Text(authState.user!.username.characters.first),
             ),
           )
         ],

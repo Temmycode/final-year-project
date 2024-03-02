@@ -4,6 +4,7 @@ import '../../config/colors/app_colors.dart';
 
 class CustomTextField extends StatefulWidget {
   final bool isPassword;
+  final bool isEmail;
   final String hintText;
   final TextEditingController controller;
 
@@ -12,6 +13,7 @@ class CustomTextField extends StatefulWidget {
     required this.controller,
     required this.hintText,
     this.isPassword = false,
+    this.isEmail = false,
   });
 
   @override
@@ -30,8 +32,11 @@ class _CustomTextFieldState extends State<CustomTextField> {
         borderRadius: BorderRadius.circular(8.r),
       ),
       child: TextFormField(
-        keyboardType:
-            widget.isPassword ? TextInputType.text : TextInputType.emailAddress,
+        keyboardType: widget.isPassword
+            ? TextInputType.text
+            : widget.isEmail
+                ? TextInputType.emailAddress
+                : TextInputType.text,
         controller: widget.controller,
         obscureText: widget.isPassword && !isVisible ? true : false,
         obscuringCharacter: "*",
@@ -43,7 +48,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
         validator: (value) {
           if (value!.isEmpty) {
             return '';
-          } else if (!widget.isPassword) {
+          } else if (!widget.isPassword && widget.isEmail) {
             if ((RegExp(r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
                     .hasMatch(value)) ==
                 false) {

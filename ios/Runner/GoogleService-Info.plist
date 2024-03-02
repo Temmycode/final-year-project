@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>API_KEY</key>
+	<string>AIzaSyBJhoN45NmepySDYgLbcZO3X08UGqwsYBo</string>
+	<key>GCM_SENDER_ID</key>
+	<string>1053451165204</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.kusimo.registration</string>
+	<key>PROJECT_ID</key>
+	<string>qr-code-scanner-a986f</string>
+	<key>STORAGE_BUCKET</key>
+	<string>qr-code-scanner-a986f.appspot.com</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:1053451165204:ios:440dff0665f42b5aac9101</string>
+</dict>
+</plist>

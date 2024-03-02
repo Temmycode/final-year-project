@@ -1,8 +1,10 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_3/config/colors/app_colors.dart';
+import 'package:flutter_application_3/features/auth/providers/auth_state_notifier_provider.dart';
 import 'package:flutter_application_3/features/database/local_database_client.dart';
 import 'package:flutter_application_3/features/database/providers/get_activity_provider.dart';
+import 'package:flutter_application_3/features/report/screens/report_screen.dart';
 import 'package:flutter_application_3/shared/widgets/scan_qr_code_view.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -46,6 +48,8 @@ class ActivitySelectionScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final authState = ref.watch(authStateNotifierProvider);
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -71,8 +75,8 @@ class ActivitySelectionScreen extends ConsumerWidget {
         actions: [
           Padding(
             padding: EdgeInsets.only(right: 20.w),
-            child: const CircleAvatar(
-              child: Text("M"),
+            child: CircleAvatar(
+              child: Text(authState.user!.username.characters.first),
             ),
           )
         ],
@@ -95,7 +99,16 @@ class ActivitySelectionScreen extends ConsumerWidget {
               actionButton(
                 "Generate Report",
                 AppColors.primary,
-                () async {},
+                () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ReportScreen(
+                        title: title,
+                      ),
+                    ),
+                  );
+                },
               ),
               actionButton(
                 "Delete Activity",

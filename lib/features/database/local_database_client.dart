@@ -1,6 +1,7 @@
 import 'package:flutter_application_3/models/activity_model.dart';
 import 'package:flutter_application_3/models/attendance_model.dart';
 import 'package:flutter_application_3/models/attendance_student.dart';
+import 'package:flutter_application_3/models/report_model.dart';
 import 'package:flutter_application_3/models/student_model.dart';
 import 'package:sqflite/sqflite.dart' as sql;
 
@@ -33,7 +34,7 @@ class LocalDatabaseClient {
     await database.execute("""CREATE TABLE attendance_student(
       attendanceId INTEGER REFERENCES attendance(id),
       matricNo TEXT REFERENCES student(matricNo),
-      attendanceRecord INTEGER DEFAULT 0,
+      attendanceRecord INTEGER DEFAULT 1,
       createdAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
     )""");
   }
@@ -146,6 +147,7 @@ class LocalDatabaseClient {
   }) async {
     try {
       final db = await LocalDatabaseClient.db();
+
       // get the activity so we can get the activity id 😭
       final activityResult = await db.query(
         "activity",
@@ -153,6 +155,8 @@ class LocalDatabaseClient {
         whereArgs: [activityTitle],
       );
       final activity = Activity.fromJson(activityResult.first);
+
+      // attendance values
       final attendanceData = {
         "activityId": activity.id!,
       };
@@ -174,6 +178,11 @@ class LocalDatabaseClient {
         );
       } else {
         final attendance = Attendance.fromJson(attendanceExist.first);
+        await addStudent(student);
+        await createAttendanceStudentRow(
+          student: student,
+          attendanceId: attendance.id,
+        );
         final attendanceStudentMap = await db.query(
           "attendance_student",
           where: "attendanceId = ? AND matricNo = ?",
@@ -183,21 +192,78 @@ class LocalDatabaseClient {
           attendanceStudentMap.first,
         );
         var record = attendanceStudent.attendanceRecord;
-        final result = await db.update(
+
+        await db.update(
           "attendance_student",
           {"attendanceRecord": record += 1},
           where: "attendanceId = ? AND matricNo = ?",
           whereArgs: [attendance.id, student.matricNo],
         );
-        print("Id that was changed was $result");
       }
     } catch (e) {
       throw Exception(e);
     }
   }
-}
 
-// final getStudnetsProvider = FutureProvider<List<Student>>((ref) async {
-//   final studnets = await LocalDatabaseClient.getStudents();
-//   return studnets;
-// });
+  // this function be like marriage ceremony 😂 😂
+  static Future<List<Report>> getReportForActivity({
+    required String activityTitle,
+  }) async {
+    final db = await LocalDatabaseClient.db();
+    List<Report> reports = [];
+
+    // get the activities with the title
+    final activityResult = await db.query(
+      "activity",
+      where: "title = ?",
+      whereArgs: [activityTitle],
+    );
+    final Activity activity = Activity.fromJson(activityResult.first);
+
+    //get the attendance for that particular activity
+    final attendanceResult = await db.query(
+      "attendance",
+      where: "activityId = ?",
+      whereArgs: [activity.id],
+    );
+    if (attendanceResult.isEmpty) {
+      return [];
+    }
+    final Attendance attendance = Attendance.fromJson(attendanceResult.first);
+
+    // get all the attendance_students with that attendance id
+    final attendanceStudentResult = await db.query(
+      "attendance_student",
+      where: "attendanceId = ?",
+      whereArgs: [attendance.id],
+    );
+    final List<AttendanceStudent> attendanceStudents = attendanceStudentResult
+        .map((value) => AttendanceStudent.fromJson(value))
+        .toList();
+
+    // get all the students with the matricNumber from the attendance student
+    List<Student> students = [];
+    for (var attStud in attendanceStudents) {
+      final studentResult = await db.query(
+        "student",
+        where: "matricNo = ?",
+        whereArgs: [attStud.matricNo],
+      );
+      final student = Student.fromJson(studentResult.first);
+      students.add(student);
+    }
+
+    // create the list of reports
+    for (var attStud in attendanceStudents) {
+      final student = students.firstWhere(
+        (element) => element.matricNo == attStud.matricNo,
+      );
+      final report = Report(
+        student: student,
+        attendanceRecord: attStud.attendanceRecord,
+      );
+      reports.add(report);
+    }
+    return reports;
+  }
+}

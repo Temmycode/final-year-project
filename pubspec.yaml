@@ -27,6 +27,12 @@ dependencies:
   sqflite: ^2.3.2
   image_picker: ^1.0.7
   qr_code_scanner: ^1.0.1
+  syncfusion_flutter_datagrid: ^24.2.7
+  csv: ^5.1.1
+  path_provider: ^2.1.2
+  firebase_core: ^2.25.5
+  firebase_auth: ^4.17.6
+  cloud_firestore: ^4.15.6
 
 dev_dependencies:
   flutter_test:
