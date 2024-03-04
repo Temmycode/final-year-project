@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:csv/csv.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -42,7 +41,7 @@ class ReportScreen extends ConsumerWidget {
 
     // Write CSV data to a file
     final String dir = (await getApplicationDocumentsDirectory()).path;
-    final String path = '$dir/table_data.csv';
+    final String path = '$dir/$title.csv';
     File file = File(path);
     await file.writeAsString(csvData);
 
@@ -91,6 +90,66 @@ class ReportScreen extends ConsumerWidget {
               child: Text("No Reports Yet"),
             );
           } else {
+            final dataTable = DataTable(
+              columnSpacing: 20.w,
+              showBottomBorder: false,
+              border: const TableBorder(
+                right: BorderSide(),
+                left: BorderSide(),
+                verticalInside: BorderSide(),
+              ),
+              columns: const [
+                DataColumn(
+                  label: Text(
+                    "S/N",
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  numeric: true,
+                ),
+                DataColumn(
+                  label: Text(
+                    "NAME",
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ),
+                DataColumn(
+                  label: Text(
+                    "MATRIC",
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  numeric: true,
+                ),
+                DataColumn(
+                  label: Text(
+                    "COUNT",
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  numeric: true,
+                ),
+              ],
+              rows: List.generate(
+                reports.length,
+                (index) => DataRow(
+                  cells: [
+                    DataCell(
+                      Text("${index + 1}"),
+                    ),
+                    DataCell(
+                      Text(
+                          " ${reports[index].student.lastName} ${reports[index].student.firstName}"),
+                    ),
+                    DataCell(
+                      Text(reports[index].student.matricNo),
+                    ),
+                    DataCell(
+                      Text(
+                        "${reports[index].attendanceRecord}",
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
             return SingleChildScrollView(
               physics: const AlwaysScrollableScrollPhysics(),
               child: Padding(
@@ -106,68 +165,9 @@ class ReportScreen extends ConsumerWidget {
                   ),
                   child: Column(
                     children: [
-                      DataTable(
-                        columnSpacing: 20.w,
-                        showBottomBorder: false,
-                        border: const TableBorder(
-                          right: BorderSide(),
-                          left: BorderSide(),
-                          verticalInside: BorderSide(),
-                        ),
-                        columns: const [
-                          DataColumn(
-                            label: Text(
-                              "S/N",
-                              style: TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                            numeric: true,
-                          ),
-                          DataColumn(
-                            label: Text(
-                              "NAME",
-                              style: TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                          ),
-                          DataColumn(
-                            label: Text(
-                              "MATRIC",
-                              style: TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                            numeric: true,
-                          ),
-                          DataColumn(
-                            label: Text(
-                              "COUNT",
-                              style: TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                            numeric: true,
-                          ),
-                        ],
-                        rows: List.generate(
-                          reports.length,
-                          (index) => DataRow(
-                            cells: [
-                              DataCell(
-                                Text("${index + 1}"),
-                              ),
-                              DataCell(
-                                Text(
-                                    "${reports[index].student.firstName} ${reports[index].student.lastName}"),
-                              ),
-                              DataCell(
-                                Text(reports[index].student.matricNo),
-                              ),
-                              DataCell(
-                                Text(
-                                  reports[index].attendanceRecord.toString(),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
+                      dataTable,
                       SizedBox(height: 19.h),
-                      const Text("Total Attendance Count: 25"),
+                      Text("Total Attendance Count: ${reports.length}"),
                       SizedBox(height: 19.h),
                     ],
                   ),
@@ -183,19 +183,105 @@ class ReportScreen extends ConsumerWidget {
           child: Text("An error occurred: $error"),
         ),
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        extendedPadding: EdgeInsets.symmetric(horizontal: 30.w),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(50.r),
-        ),
-        backgroundColor: AppColors.primary,
-        onPressed: () {},
-        label: Text(
-          "Export",
-          style: TextStyle(
-            fontSize: 16.spMin,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
+      floatingActionButton: reportsProvider.when(
+        data: (reports) {
+          return FloatingActionButton.extended(
+            extendedPadding: EdgeInsets.symmetric(horizontal: 30.w),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(50.r),
+            ),
+            backgroundColor: AppColors.primary,
+            onPressed: () async {
+              if (reports.isNotEmpty) {
+                // convert to csv
+                final dataTable = DataTable(
+                  columnSpacing: 20.w,
+                  showBottomBorder: false,
+                  border: const TableBorder(
+                    right: BorderSide(),
+                    left: BorderSide(),
+                    verticalInside: BorderSide(),
+                  ),
+                  columns: const [
+                    DataColumn(
+                      label: Text(
+                        "S/N",
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      numeric: true,
+                    ),
+                    DataColumn(
+                      label: Text(
+                        "NAME",
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                    DataColumn(
+                      label: Text(
+                        "MATRIC",
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      numeric: true,
+                    ),
+                    DataColumn(
+                      label: Text(
+                        "COUNT",
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      numeric: true,
+                    ),
+                  ],
+                  rows: List.generate(
+                    reports.length,
+                    (index) => DataRow(
+                      cells: [
+                        DataCell(
+                          Text("${index + 1}"),
+                        ),
+                        DataCell(
+                          Text(
+                              "${reports[index].student.firstName} ${reports[index].student.lastName}"),
+                        ),
+                        DataCell(
+                          Text(reports[index].student.matricNo),
+                        ),
+                        DataCell(
+                          Text(
+                            reports[index].attendanceRecord.toString(),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+                await exportToCsv(dataTable);
+              }
+            },
+            label: Text(
+              "Export",
+              style: TextStyle(
+                fontSize: 16.spMin,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+            ),
+          );
+        },
+        error: (err, stk) => Container(),
+        loading: () => FloatingActionButton.extended(
+          extendedPadding: EdgeInsets.symmetric(horizontal: 30.w),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(50.r),
+          ),
+          backgroundColor: AppColors.primary,
+          onPressed: () {},
+          label: Text(
+            "Export",
+            style: TextStyle(
+              fontSize: 16.spMin,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
           ),
         ),
       ),

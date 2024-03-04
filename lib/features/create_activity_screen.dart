@@ -139,6 +139,7 @@ class CreateActivityScreen extends ConsumerWidget {
                         title: controller.text,
                         type: type,
                         imageUrl: AppImage.hall,
+                        createdAt: DateTime.now(),
                       );
                       await LocalDatabaseClient.createActivity(
                         activity: activity,

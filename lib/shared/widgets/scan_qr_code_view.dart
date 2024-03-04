@@ -119,7 +119,6 @@ class _ScanQrCodeViewState extends ConsumerState<ScanQrCodeView>
                           },
                           done: () async {
                             // handle the function for the db
-                            print(students);
                             for (var student in students) {
                               await LocalDatabaseClient
                                   .createAttendanceForActivity(
@@ -127,6 +126,7 @@ class _ScanQrCodeViewState extends ConsumerState<ScanQrCodeView>
                                 student: student,
                               );
                             }
+                            // ignore: unused_result
                             ref.refresh(
                               getReportForActivityProvider(widget.title),
                             );

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_3/features/auth/providers/auth_state_notifier_provider.dart';
-import 'package:flutter_application_3/features/auth/screens/login_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../shared/widgets/custom_textfield.dart';

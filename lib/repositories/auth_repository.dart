@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart' show debugPrint;
+import 'package:flutter_application_3/cloud/services/cloud_serives.dart';
 import 'package:flutter_application_3/models/user_model.dart';
 import 'package:flutter_application_3/shared/services/shared_preference_service.dart';
 
@@ -28,12 +29,20 @@ class AuthRepository {
             isEqualTo: email,
           )
           .get();
+
       if (firestoreUser.docs.isNotEmpty) {
         userModel = UserModel.fromJson(firestoreUser);
         PreferenceService.userName = userModel.username;
         PreferenceService.email = userModel.email;
         PreferenceService.staffId = userModel.staffId;
         PreferenceService.isloggedIn = true;
+
+        if (PreferenceService.isFirstLaunch) {
+          // retrieve information from cloud and store on local storage
+          await CloudServices.getDataFromCloudAndBackupToLocalStorage(
+            userModel.staffId,
+          ).whenComplete(() => PreferenceService.isFirstLaunch = false);
+        }
       }
 
       return userModel;

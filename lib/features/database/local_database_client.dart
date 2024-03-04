@@ -16,13 +16,13 @@ class LocalDatabaseClient {
         title TEXT NOT NULL,
         imageUrl TEXT NOT NULL,
         type TEXT NOT NULL,
-        createdAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP)
+        createdAt TEXT NOT NULL)
     """,
     );
     await database.execute(""" CREATE TABLE attendance(
         id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
         activityId INTEGER REFERENCES activity(id),
-        createdAt TIMESTAMP  DEFAULT CURRENT_TIMESTAMP NOT NULL
+        createdAt TEXT NOT NULL
       )
     """);
     await database.execute(""" CREATE TABLE student(
@@ -35,7 +35,7 @@ class LocalDatabaseClient {
       attendanceId INTEGER REFERENCES attendance(id),
       matricNo TEXT REFERENCES student(matricNo),
       attendanceRecord INTEGER DEFAULT 1,
-      createdAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+      createdAt TEXT NOT NULL
     )""");
   }
 
@@ -55,7 +55,8 @@ class LocalDatabaseClient {
     final data = {
       "title": activity.title,
       "imageUrl": activity.imageUrl,
-      "type": activity.type
+      "type": activity.type,
+      "createdAt": activity.createdAt.toIso8601String(),
     };
     await db.insert(
       'activity',
@@ -122,20 +123,57 @@ class LocalDatabaseClient {
     }
   }
 
-  static Future<void> createAttendanceStudentRow(
-      {required Student student, required int attendanceId}) async {
+  static Future<int> createAttendance({required int activityId}) async {
     final db = await LocalDatabaseClient.db();
-    final data = {"attendanceId": attendanceId, "matricNo": student.matricNo};
+
+    final attendanceData = {
+      "activityId": activityId,
+      "createdAt": DateTime.now().toIso8601String(),
+    };
+    final attendanceId = await db.insert(
+      "attendance",
+      attendanceData,
+      conflictAlgorithm: sql.ConflictAlgorithm.replace,
+    );
+    return attendanceId;
+  }
+
+  static Future<void> createAttendanceStudentRow({
+    required String studentMatricNo,
+    required int attendanceId,
+  }) async {
+    final db = await LocalDatabaseClient.db();
+    final data = {
+      "attendanceId": attendanceId,
+      "matricNo": studentMatricNo,
+      "createdAt": DateTime.now().toIso8601String(),
+    };
     final row = await db.query(
       "attendance_student",
       where: "matricNo = ? AND attendanceId = ?",
-      whereArgs: [student.matricNo, attendanceId],
+      whereArgs: [studentMatricNo, attendanceId],
     );
     if (row.isEmpty) {
       await db.insert(
         "attendance_student",
         data,
         conflictAlgorithm: sql.ConflictAlgorithm.replace,
+      );
+      final result = await db.query(
+        "attendance_student",
+        where: "matricNo = ? AND attendanceId = ?",
+        whereArgs: [studentMatricNo, attendanceId],
+      );
+
+      AttendanceStudent.fromJson(result.first);
+    } else {
+      final attendanceStudent = AttendanceStudent.fromJson(row.first);
+      var record = attendanceStudent.attendanceRecord;
+      await db.update(
+        "attendance_student",
+        {"attendanceRecord": record += 1},
+        where: "attendanceId = ? AND matricNo = ?",
+        whereArgs: [attendanceId, studentMatricNo],
       );
     }
   }
@@ -156,49 +194,26 @@ class LocalDatabaseClient {
       );
       final activity = Activity.fromJson(activityResult.first);
 
-      // attendance values
-      final attendanceData = {
-        "activityId": activity.id!,
-      };
       final attendanceExist = await db.query(
         "attendance",
         where: "activityId = ?",
         whereArgs: [activity.id],
       );
       if (attendanceExist.isEmpty) {
-        final attendanceId = await db.insert(
-          "attendance",
-          attendanceData,
-          conflictAlgorithm: sql.ConflictAlgorithm.replace,
-        );
+        final attendanceId = await createAttendance(activityId: activity.id!);
         await addStudent(student);
         await createAttendanceStudentRow(
-          student: student,
+          studentMatricNo: student.matricNo,
           attendanceId: attendanceId,
         );
       } else {
+        // if the attendance exists then attendance-student already exists
         final attendance = Attendance.fromJson(attendanceExist.first);
         await addStudent(student);
         await createAttendanceStudentRow(
-          student: student,
+          studentMatricNo: student.matricNo,
           attendanceId: attendance.id,
-        );
-        final attendanceStudentMap = await db.query(
-          "attendance_student",
-          where: "attendanceId = ? AND matricNo = ?",
-          whereArgs: [attendance.id, student.matricNo],
-        );
-        final attendanceStudent = AttendanceStudent.fromJson(
-          attendanceStudentMap.first,
-        );
-        var record = attendanceStudent.attendanceRecord;
-
-        await db.update(
-          "attendance_student",
-          {"attendanceRecord": record += 1},
-          where: "attendanceId = ? AND matricNo = ?",
-          whereArgs: [attendance.id, student.matricNo],
-        );
+        ); // creating the first instance for the attendance student if the attendance already exists
       }
     } catch (e) {
       throw Exception(e);
