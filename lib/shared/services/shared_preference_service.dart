@@ -11,6 +11,9 @@ class PreferenceService {
       prefs.setBool("isloggedIn", isloggedIn);
   static bool get isloggedIn => prefs.getBool("isloggedIn") ?? false;
 
+  static set isAdmin(bool isAdmin) => prefs.setBool("isAdmin", isAdmin);
+  static bool get isAdmin => prefs.getBool("isAdmin") ?? false;
+
   // TODO: fix the '' to null
   //* Credentials
   static set userName(String username) => prefs.setString("username", username);

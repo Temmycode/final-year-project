@@ -16,17 +16,17 @@ class OnboardingScreen extends StatefulWidget {
 class _OnboardingScreenState extends State<OnboardingScreen> {
   List onboardingItems = [
     [
-      AppImage.onboarding1,
+      AppImages.onboarding1,
       "Take Charge of Your Classroom",
       "Take advantage of our attendance system.",
     ],
     [
-      AppImage.onboarding2,
+      AppImages.onboarding2,
       "Swift and Fast Attendance",
       "Take attendance efficiently.",
     ],
     [
-      AppImage.onboarding3,
+      AppImages.onboarding3,
       "Tons of User Friendly Featured",
       "",
     ],

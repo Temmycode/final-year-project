@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_3/features/auth/providers/auth_state_notifier_provider.dart';
-import 'package:flutter_application_3/features/auth/screens/sign_up_screen.dart';
+import 'package:flutter_application_3/features/auth/screens/create_new_user_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../shared/widgets/custom_textfield.dart';
@@ -88,7 +88,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   child: TextButton(
                     onPressed: () => Navigator.of(context).push(
                       MaterialPageRoute(
-                        builder: (context) => const SignupScreen(),
+                        builder: (context) => const CreateNewUserScreen(),
                       ),
                     ),
                     child: const Text("Don't have an account? Signup"),

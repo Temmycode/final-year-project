@@ -4,12 +4,14 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class SecondaryButton extends StatelessWidget {
   final String title;
+  final Color? color;
   final VoidCallback? onTap;
 
   const SecondaryButton({
     super.key,
     required this.title,
     this.onTap,
+    this.color,
   });
 
   @override
@@ -28,7 +30,7 @@ class SecondaryButton extends StatelessWidget {
           child: Text(
             title,
             style: TextStyle(
-              color: AppColors.primary,
+              color: color ?? AppColors.primary,
               fontWeight: FontWeight.w600,
               fontSize: 16.spMin,
             ),

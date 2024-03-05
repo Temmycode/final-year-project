@@ -6,16 +6,21 @@ import 'package:flutter_svg/svg.dart';
 
 class CustomBackButton extends StatelessWidget {
   final Color? color;
+  final VoidCallback onTap;
 
   const CustomBackButton({
     super.key,
+    required this.onTap,
     this.color = AppColors.backButton,
   });
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: () => Navigator.pop(context),
+      onTap: () {
+        onTap();
+        Navigator.pop(context);
+      },
       borderRadius: BorderRadius.circular(56.r),
       child: Container(
         alignment: Alignment.center,
@@ -33,7 +38,7 @@ class CustomBackButton extends StatelessWidget {
           ],
         ),
         child: SvgPicture.asset(
-          AppImage.backButton,
+          AppImages.backButton,
           height: 24.h,
           width: 24.h,
           fit: BoxFit.cover,

@@ -27,8 +27,7 @@ class _ScanQrCodeViewState extends ConsumerState<ScanQrCodeView>
   bool scan =
       true; // this value is what i use to toggle the scan when a student is scanned
   final GlobalKey qrKey = GlobalKey(debugLabel: 'QR');
-  List<Student> students =
-      []; // i use this to hold the students to be stored in the database
+  List<Student> students = [];
   QRViewController? controller; // value is used to control the qr scanner
   late final Animation<double> _animation; // animation value
   late final AnimationController
@@ -102,7 +101,21 @@ class _ScanQrCodeViewState extends ConsumerState<ScanQrCodeView>
               Positioned(
                 left: 35.w,
                 bottom: 62.h,
-                child: const CustomBackButton(),
+                child: CustomBackButton(
+                  onTap: () async {
+                    // handle the function for the db
+                    for (var student in students) {
+                      await LocalDatabaseClient.createAttendanceForActivity(
+                        activityTitle: widget.title,
+                        student: student,
+                      );
+                    }
+                    // ignore: unused_result
+                    ref.refresh(
+                      getReportForActivityProvider(widget.title),
+                    );
+                  },
+                ),
               ),
               Positioned(
                 top: 122.h,
@@ -151,19 +164,19 @@ class _ScanQrCodeViewState extends ConsumerState<ScanQrCodeView>
           children: [
             Align(
               alignment: Alignment.topLeft,
-              child: SvgPicture.asset(AppImage.qrRect1),
+              child: SvgPicture.asset(AppImages.qrRect1),
             ),
             Align(
               alignment: Alignment.topRight,
-              child: SvgPicture.asset(AppImage.qrRect2),
+              child: SvgPicture.asset(AppImages.qrRect2),
             ),
             Align(
               alignment: Alignment.bottomLeft,
-              child: SvgPicture.asset(AppImage.qrRect3),
+              child: SvgPicture.asset(AppImages.qrRect3),
             ),
             Align(
               alignment: Alignment.bottomRight,
-              child: SvgPicture.asset(AppImage.qrRect4),
+              child: SvgPicture.asset(AppImages.qrRect4),
             ),
             Center(
               child: SizedBox(

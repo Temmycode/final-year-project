@@ -31,13 +31,14 @@ class AuthRepository {
           .get();
 
       if (firestoreUser.docs.isNotEmpty) {
-        userModel = UserModel.fromJson(firestoreUser);
+        userModel = UserModel.fromJson(firestoreUser.docs.first.data());
         PreferenceService.userName = userModel.username;
         PreferenceService.email = userModel.email;
         PreferenceService.staffId = userModel.staffId;
         PreferenceService.isloggedIn = true;
+        PreferenceService.isAdmin = userModel.isAdmin;
 
-        if (PreferenceService.isFirstLaunch) {
+        if (PreferenceService.isFirstLaunch && !userModel.isAdmin) {
           // retrieve information from cloud and store on local storage
           await CloudServices.getDataFromCloudAndBackupToLocalStorage(
             userModel.staffId,
@@ -61,6 +62,7 @@ class AuthRepository {
     required String staffId,
     required String email,
     required String password,
+    required bool isAdmin,
   }) async {
     try {
       // create the user
@@ -73,6 +75,7 @@ class AuthRepository {
         email: email,
         username: username,
         staffId: staffId,
+        isAdmin: isAdmin,
       );
       final userWithEmailSnapshot = await firestore
           .collection('users')
@@ -111,6 +114,63 @@ class AuthRepository {
     } catch (e) {
       debugPrint(e.toString());
       return false;
+    }
+  }
+
+  Future<List<UserModel>> getAllExistingUsers() async {
+    try {
+      final queryUsers = await firestore
+          .collection("users")
+          .where("isAdmin", isEqualTo: false)
+          .get();
+
+      final users = queryUsers.docs
+          .map(
+            (user) => UserModel.fromJson(
+              user.data(),
+            ),
+          )
+          .toList();
+      return users;
+    } catch (e) {
+      _error = e.toString();
+      throw Exception(e.toString());
+    }
+  }
+
+  Future<void> updateUserDetails(UserModel user) async {
+    try {
+      final queryRes = await firestore
+          .collection("users")
+          .where("staffId", isEqualTo: user.staffId)
+          .get(); // get the query response of the user
+      await firestore
+          .collection("users")
+          .doc(queryRes.docs.first.reference.id)
+          .update(user.toJson()); // update the user with new user values
+
+      // auth.
+    } catch (e) {
+      _error = e.toString();
+      throw Exception();
+    }
+  }
+
+  Future<void> deleteUserDetails(UserModel user) async {
+    try {
+      final queryRes = await firestore
+          .collection("users")
+          .where("staffId", isEqualTo: user.staffId)
+          .get(); // get the query response of the user
+      await firestore
+          .collection("users")
+          .doc(queryRes.docs.first.reference.id)
+          .delete(); // update the user with new user values
+
+      // auth.
+    } catch (e) {
+      _error = e.toString();
+      throw Exception();
     }
   }
 }

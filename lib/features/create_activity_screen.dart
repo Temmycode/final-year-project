@@ -2,10 +2,10 @@ import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_3/config/colors/app_colors.dart';
-import 'package:flutter_application_3/config/images/app_images.dart';
 import 'package:flutter_application_3/features/auth/providers/auth_state_notifier_provider.dart';
 import 'package:flutter_application_3/features/database/local_database_client.dart';
 import 'package:flutter_application_3/features/database/providers/get_activity_provider.dart';
+import 'package:flutter_application_3/helpers/assign_image_for_activity.dart';
 import 'package:flutter_application_3/models/activity_model.dart';
 import 'package:flutter_application_3/shared/widgets/primary_button.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -138,7 +138,7 @@ class CreateActivityScreen extends ConsumerWidget {
                       final activity = Activity(
                         title: controller.text,
                         type: type,
-                        imageUrl: AppImage.hall,
+                        imageUrl: assingImageForActivity(type),
                         createdAt: DateTime.now(),
                       );
                       await LocalDatabaseClient.createActivity(

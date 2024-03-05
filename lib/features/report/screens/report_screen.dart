@@ -5,9 +5,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_application_3/config/colors/app_colors.dart';
 import 'package:flutter_application_3/features/auth/providers/auth_state_notifier_provider.dart';
 import 'package:flutter_application_3/features/database/providers/get_report_for_activity_provider.dart';
+import 'package:flutter_application_3/shared/widgets/snack_bar.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class ReportScreen extends ConsumerWidget {
   final String title;
@@ -17,35 +18,51 @@ class ReportScreen extends ConsumerWidget {
     required this.title,
   });
 
-  Future<void> exportToCsv(DataTable dataTable) async {
-    List<List<dynamic>> dataRows = [];
+  Future<bool> requestStoragePermission() async {
+    final status = await Permission.storage.request();
+    return status == PermissionStatus.granted;
+  }
 
-    // Extract header
-    List<dynamic> headerRow = [];
-    for (DataColumn column in dataTable.columns) {
-      headerRow.add(column.label.toString());
-    }
-    dataRows.add(headerRow);
-
-    // Extract data rows
-    for (DataRow row in dataTable.rows) {
-      List<dynamic> dataRow = [];
-      for (DataCell cell in row.cells) {
-        dataRow.add(cell.child.toString());
+  Future<void> exportToCsv(
+      BuildContext context, List<Map<String, dynamic>> data) async {
+    if (Platform.isAndroid) {
+      if (!await requestStoragePermission()) {
+        return; // Handle permission denial gracefully
       }
-      dataRows.add(dataRow);
+      // Extract column names from the first data row or use explicit headers if needed
+      final List<String> columnNames =
+          data.isNotEmpty ? data.first.keys.toList() : [];
+
+      // Add headers as the first row
+      final List<List<dynamic>> csvData = [columnNames];
+
+      // Add data rows
+      for (final row in data) {
+        csvData.add(row.values.toList());
+      }
+
+      // final directory = await getDownloadsDirectory();
+      final path = '/storage/emulated/0/Download/$title.csv';
+      // final path = '${directory!.path}$title.csv';
+
+      final csv = const ListToCsvConverter().convert(csvData);
+
+      try {
+        await File(path).writeAsString(csv);
+        // Show success message or notification
+        // ignore: use_build_context_synchronously
+        displaySnack(
+          context,
+          text: 'CSV stored successfully to your downloads folder',
+        );
+      } catch (e) {
+        // Handle errors, e.g., file system issues
+        // ignore: use_build_context_synchronously
+        displaySnack(context, text: e.toString());
+      }
+    } else {
+      return;
     }
-
-    // Convert data to CSV format
-    String csvData = const ListToCsvConverter().convert(dataRows);
-
-    // Write CSV data to a file
-    final String dir = (await getApplicationDocumentsDirectory()).path;
-    final String path = '$dir/$title.csv';
-    File file = File(path);
-    await file.writeAsString(csvData);
-
-    print('CSV file exported to $path');
   }
 
   @override
@@ -193,69 +210,36 @@ class ReportScreen extends ConsumerWidget {
             backgroundColor: AppColors.primary,
             onPressed: () async {
               if (reports.isNotEmpty) {
+                print("object");
+
                 // convert to csv
-                final dataTable = DataTable(
-                  columnSpacing: 20.w,
-                  showBottomBorder: false,
-                  border: const TableBorder(
-                    right: BorderSide(),
-                    left: BorderSide(),
-                    verticalInside: BorderSide(),
-                  ),
-                  columns: const [
-                    DataColumn(
-                      label: Text(
-                        "S/N",
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      numeric: true,
-                    ),
-                    DataColumn(
-                      label: Text(
-                        "NAME",
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                    DataColumn(
-                      label: Text(
-                        "MATRIC",
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      numeric: true,
-                    ),
-                    DataColumn(
-                      label: Text(
-                        "COUNT",
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      numeric: true,
-                    ),
-                  ],
-                  rows: List.generate(
-                    reports.length,
-                    (index) => DataRow(
-                      cells: [
-                        DataCell(
-                          Text("${index + 1}"),
-                        ),
-                        DataCell(
-                          Text(
-                              "${reports[index].student.firstName} ${reports[index].student.lastName}"),
-                        ),
-                        DataCell(
-                          Text(reports[index].student.matricNo),
-                        ),
-                        DataCell(
-                          Text(
-                            reports[index].attendanceRecord.toString(),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                final List<Map<String, dynamic>> dataSource = List.generate(
+                  reports.length,
+                  (index) => {
+                    "S/N": index + 1,
+                    "NAME":
+                        "${reports[index].student.firstName} ${reports[index].student.lastName}",
+                    "MATRIC": reports[index].student.matricNo,
+                    "COUNT": reports[index].attendanceRecord
+                  },
                 );
-                await exportToCsv(dataTable);
+                await exportToCsv(context, dataSource);
               }
+              // if (reports.isNotEmpty) {
+              //   // convert to csv
+
+              //   final List<Map<String, dynamic>> dataSource = List.generate(
+              //     reports.length,
+              //     (index) => {
+              //       "S/N": index + 1,
+              //       "NAME":
+              //           "${reports[index].student.firstName} ${reports[index].student.lastName}",
+              //       "MATRIC": int.parse(reports[index].student.matricNo),
+              //       "COUNT": reports[index].attendanceRecord
+              //     },
+              //   );
+              //   await exportToCsv(context, dataSource);
+              // }
             },
             label: Text(
               "Export",

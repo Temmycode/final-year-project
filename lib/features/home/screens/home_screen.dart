@@ -2,10 +2,11 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_3/config/images/app_images.dart';
 import 'package:flutter_application_3/features/auth/providers/auth_state_notifier_provider.dart';
-import 'package:flutter_application_3/features/home/screens/classroom_screen.dart';
+import 'package:flutter_application_3/features/home/screens/activity_screen.dart';
 import 'package:flutter_application_3/shared/widgets/activity_cards.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_svg/svg.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -22,11 +23,7 @@ class HomeScreen extends ConsumerWidget {
         backgroundColor: Colors.white,
         shadowColor: Colors.black.withOpacity(0.25),
         leading: CupertinoButton(
-          child: const Icon(
-            Icons.menu,
-            color: Colors.black,
-            weight: 0.5,
-          ),
+          child: SvgPicture.asset(AppImages.syncToCloud),
           onPressed: () {},
         ),
         title: Text(
@@ -61,7 +58,7 @@ class HomeScreen extends ConsumerWidget {
                   ),
                 ),
                 title: "Classroom Attendance",
-                image: AppImage.classroom,
+                image: AppImages.classroom,
               ),
               ActivityCards(
                 onTap: () => Navigator.push(
@@ -74,7 +71,7 @@ class HomeScreen extends ConsumerWidget {
                   ),
                 ),
                 title: "Hall Assembly Attendance",
-                image: AppImage.hall,
+                image: AppImages.hall,
               ),
               ActivityCards(
                 onTap: () => Navigator.push(
@@ -87,7 +84,7 @@ class HomeScreen extends ConsumerWidget {
                   ),
                 ),
                 title: "Chapel Attendance",
-                image: AppImage.chapel,
+                image: AppImages.chapel,
               ),
               ActivityCards(
                 onTap: () => Navigator.push(
@@ -100,7 +97,7 @@ class HomeScreen extends ConsumerWidget {
                   ),
                 ),
                 title: "Interdisciplinary Seminar",
-                image: AppImage.interdisciplinary,
+                image: AppImages.interdisciplinary,
               ),
             ],
           ),

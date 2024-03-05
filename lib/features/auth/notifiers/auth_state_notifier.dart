@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart'
     show BuildContext, Navigator, MaterialPageRoute;
+import 'package:flutter_application_3/features/admin/screens/admin_actions_screen.dart';
 import 'package:flutter_application_3/features/home/screens/home_screen.dart';
 import 'package:flutter_application_3/models/auth_state.dart';
 import 'package:flutter_application_3/models/user_model.dart';
@@ -15,9 +16,11 @@ class AuthStateNotifier extends StateNotifier<AuthState> {
   AuthStateNotifier() : super(const AuthState.unknown()) {
     if (PreferenceService.isloggedIn) {
       final user = UserModel(
-          email: PreferenceService.email,
-          username: PreferenceService.userName,
-          staffId: PreferenceService.email);
+        email: PreferenceService.email,
+        username: PreferenceService.userName,
+        staffId: PreferenceService.email,
+        isAdmin: PreferenceService.isAdmin,
+      );
       state = AuthState(isLoading: false, user: user);
     }
   }
@@ -40,6 +43,13 @@ class AuthStateNotifier extends StateNotifier<AuthState> {
 
       // ignore: use_build_context_synchronously
       displaySnack(context, text: AuthRepository.error);
+    } else if (user.isAdmin) {
+      // ignore: use_build_context_synchronously
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (context) => const AdminActionsScreen()),
+        (route) => false,
+      );
     } else {
       // ignore: use_build_context_synchronously
       Navigator.pushAndRemoveUntil(
@@ -56,6 +66,7 @@ class AuthStateNotifier extends StateNotifier<AuthState> {
     required String email,
     required String password,
     required String staffId,
+    required bool isAdmin,
   }) async {
     state = state.copyIsLoading(
       isLoading: true,
@@ -65,16 +76,19 @@ class AuthStateNotifier extends StateNotifier<AuthState> {
       email: email,
       password: password,
       staffId: staffId,
+      isAdmin: isAdmin,
     ); // calls the signup function
-    state = const AuthState(
+    state = AuthState(
       isLoading: false,
-      user: null,
+      user: state.user,
     ); // set the state again // we also make the user null because we don't need the value
     if (user == null) {
       // call the function for the show snackbar ...
 
+      // ignore: use_build_context_synchronously
       displaySnack(context, text: AuthRepository.error);
     } else {
+      // ignore: use_build_context_synchronously
       Navigator.pop(context);
     }
   }
@@ -83,5 +97,17 @@ class AuthStateNotifier extends StateNotifier<AuthState> {
     state = state.copyIsLoading(isLoading: true);
     await repository.logout();
     state = const AuthState(user: null, isLoading: false);
+  }
+
+  Future<void> updateUserDetails(UserModel user) async {
+    state = state.copyIsLoading(isLoading: true);
+    await repository.updateUserDetails(user);
+    state = state.copyIsLoading(isLoading: false);
+  }
+
+  Future<void> deleteUserDetails(UserModel user) async {
+    state = state.copyIsLoading(isLoading: true);
+    await repository.deleteUserDetails(user);
+    state = state.copyIsLoading(isLoading: false);
   }
 }
