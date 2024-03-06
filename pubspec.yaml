@@ -35,6 +35,8 @@ dependencies:
   cloud_firestore: ^4.15.6
   smooth_page_indicator: ^1.1.0
   permission_handler: ^11.3.0
+  share_plus: ^7.2.2
+  screenshot: ^2.1.0
 
 dev_dependencies:
   flutter_test:

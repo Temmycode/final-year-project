@@ -87,9 +87,6 @@ class AuthStateNotifier extends StateNotifier<AuthState> {
 
       // ignore: use_build_context_synchronously
       displaySnack(context, text: AuthRepository.error);
-    } else {
-      // ignore: use_build_context_synchronously
-      Navigator.pop(context);
     }
   }
 

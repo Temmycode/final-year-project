@@ -33,6 +33,7 @@ class Activity {
   Map<String, dynamic> toJson() => {
         "id": id,
         "title": title,
+        "type": type,
         "imageUrl": imageUrl,
         "staffId": staffId,
         "createdAt": createdAt.toIso8601String(),

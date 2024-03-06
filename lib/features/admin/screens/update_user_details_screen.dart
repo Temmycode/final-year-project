@@ -107,7 +107,10 @@ class _UpdateUserDetailsScreenState
                         ),
                         SizedBox(height: 50.h),
                         PrimaryButton(
-                          onTap: () => Navigator.pop(context),
+                          onTap: () => Navigator.popUntil(
+                            context,
+                            (route) => route.isFirst,
+                          ),
                           title: "Done",
                         )
                       ],

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_application_3/config/colors/app_colors.dart';
 import 'package:flutter_application_3/config/images/app_images.dart';
 import 'package:flutter_application_3/features/auth/providers/auth_state_notifier_provider.dart';
+import 'package:flutter_application_3/features/auth/providers/get_all_existing_users_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
@@ -74,26 +75,35 @@ class _LoginScreenState extends ConsumerState<CreateNewUserScreen> {
           child: Padding(
             padding: EdgeInsets.symmetric(horizontal: 23.w),
             child: isSignedUp
-                ? Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      // ... image
-                      SvgPicture.asset(AppImages.success),
-                      SizedBox(height: 50.h),
-                      Text(
-                        "New User Successfully Created",
-                        style: TextStyle(
-                          fontSize: 22.spMin,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.primary,
+                ? SizedBox(
+                    height: MediaQuery.sizeOf(context).height -
+                        kToolbarHeight -
+                        kBottomNavigationBarHeight,
+                    width: double.maxFinite,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        // ... image
+                        SvgPicture.asset(AppImages.success),
+                        SizedBox(height: 50.h),
+                        Text(
+                          "New User Successfully Created",
+                          style: TextStyle(
+                            fontSize: 22.spMin,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.primary,
+                          ),
                         ),
-                      ),
-                      SizedBox(height: 50.h),
-                      PrimaryButton(
-                        onTap: () => setState(() => isSignedUp = !isSignedUp),
-                        title: "Done",
-                      )
-                    ],
+                        SizedBox(height: 50.h),
+                        PrimaryButton(
+                          onTap: () => Navigator.popUntil(
+                            context,
+                            (route) => route.isFirst,
+                          ),
+                          title: "Done",
+                        )
+                      ],
+                    ),
                   )
                 : Column(
                     children: [
@@ -155,10 +165,14 @@ class _LoginScreenState extends ConsumerState<CreateNewUserScreen> {
                                         staffId: _staffIdController.text,
                                         password: _passwordController.text,
                                         isAdmin: false,
-                                      );
-                                  setState(() {
-                                    isSignedUp;
-                                  });
+                                      )
+                                      .whenComplete(
+                                    () {
+                                      setState(() => isSignedUp = true);
+                                      // ignore: unused_result
+                                      ref.refresh(getAllExistingUsersProvider);
+                                    },
+                                  );
                                 }
                               },
                               title: "Sign Up",

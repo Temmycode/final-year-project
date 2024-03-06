@@ -15,9 +15,10 @@ class CloudServices {
           .collection('activities')
           .where("staffId", isEqualTo: staffId)
           .get();
-      final activities = cloudActivities.docs
-          .map((document) => Activity.fromJson(document.data()))
-          .toList();
+      final activities = cloudActivities.docs.map((document) {
+        return Activity.fromJson(document.data());
+      }).toList();
+
       // retrieve all the attendances
       final cloudAttendances = await firestore
           .collection('attendance')
@@ -27,31 +28,39 @@ class CloudServices {
       final attendances = cloudAttendances.docs
           .map((document) => Attendance.fromJson(document.data()))
           .toList();
+
       // retrieve attendance-students
       final cloudAttendanceStudents = await firestore
           .collection('attendanceStudent')
           .where('staffId', isEqualTo: staffId)
           .get();
+
       final attendanceStudents = cloudAttendanceStudents.docs
           .map((document) => AttendanceStudent.fromJson(document.data()))
           .toList();
+
       // retrieve students
       for (var attendanceStudent in attendanceStudents) {
         final cloudStudent = await firestore
             .collection('students')
             .where('matricNo', isEqualTo: attendanceStudent.matricNo)
             .get();
-        final student = Student.fromJson(cloudStudent.docs.first.data());
-        students.add(student);
+
+        if (cloudStudent.docs.isNotEmpty) {
+          final student = Student.fromJson(cloudStudent.docs.first.data());
+          students.add(student);
+        }
       }
 
       // add them to local storage
       if (activities.isNotEmpty) {
+        print(activities);
         for (var activity in activities) {
           await LocalDatabaseClient.createActivity(activity: activity);
         }
       }
       if (attendances.isNotEmpty) {
+        print(attendances);
         for (var attendance in attendances) {
           await LocalDatabaseClient.createAttendance(
             activityId: attendance.activityId,
@@ -59,6 +68,7 @@ class CloudServices {
         }
       }
       if (attendanceStudents.isNotEmpty) {
+        print(attendanceStudents);
         for (var attendanceStudent in attendanceStudents) {
           await LocalDatabaseClient.createAttendanceStudentRow(
             studentMatricNo: attendanceStudent.matricNo,
@@ -67,6 +77,7 @@ class CloudServices {
         }
       }
       if (students.isNotEmpty) {
+        print(students);
         for (var student in students) {
           await LocalDatabaseClient.addStudent(student);
         }
@@ -92,8 +103,15 @@ class CloudServices {
             .where('staffId', isEqualTo: staffId)
             .get(); // get the activity
 
-        if (!cloudActivity.docs.first.exists) {
-          await firestore.collection('activities').add(activity.toJson());
+        if (cloudActivity.docs.isEmpty) {
+          final newActivity = Activity(
+              id: activity.id,
+              title: activity.title,
+              type: activity.type,
+              imageUrl: activity.imageUrl,
+              staffId: staffId,
+              createdAt: activity.createdAt);
+          await firestore.collection('activities').add(newActivity.toJson());
         }
       }
 
@@ -108,10 +126,16 @@ class CloudServices {
             .where('staffId', isEqualTo: staffId)
             .get();
 
-        if (!cloudAttendance.docs.first.exists) {
+        if (cloudAttendance.docs.isEmpty) {
+          final newAttendance = Attendance(
+            id: attendance.id,
+            activityId: attendance.activityId,
+            staffId: staffId,
+            createdAt: attendance.createdAt,
+          );
           // because each user can have many activities but each activity has only one attendance
           // then there should be only one attendance with that activity id
-          await firestore.collection('attendance').add(attendance.toJson());
+          await firestore.collection('attendance').add(newAttendance.toJson());
         }
       }
 
@@ -125,31 +149,42 @@ class CloudServices {
             .get();
 
         if (cloudAttendanceStudent.docs.isEmpty) {
+          final newAttendanceStudent = AttendanceStudent(
+            attendanceId: attendanceStudent.attendanceId,
+            matricNo: attendanceStudent.matricNo,
+            attendanceRecord: attendanceStudent.attendanceRecord,
+            staffId: staffId,
+            createdAt: attendanceStudent.createdAt,
+          );
           await firestore
               .collection('attendanceStudent')
-              .add(attendanceStudent.toJson());
+              .add(newAttendanceStudent.toJson());
         } else {
+          final updatedAttendanceStudent = AttendanceStudent(
+            attendanceId: attendanceStudent.attendanceId,
+            matricNo: attendanceStudent.matricNo,
+            attendanceRecord: attendanceStudent.attendanceRecord,
+            staffId: staffId,
+            createdAt: attendanceStudent.createdAt,
+          );
           await firestore
               .collection('attendanceStudent')
               .doc(cloudAttendanceStudent.docs.first.reference.id)
               .update(
-                attendanceStudent.toJson(),
+                updatedAttendanceStudent.toJson(),
               ); // update the value if it already exists
         }
       }
 
       // store the activities in a collection
       for (var student in students) {
-        final cloudStudnet = await firestore
+        final cloudStudent = await firestore
             .collection('students')
             .where("matricNo", isEqualTo: student.matricNo)
             .get();
 
-        if (cloudStudnet.docs.isEmpty) {
-          await firestore
-              .collection('students')
-              .doc(student.matricNo.toString())
-              .set(student.toJson());
+        if (cloudStudent.docs.isEmpty) {
+          await firestore.collection('students').add(student.toJson());
         }
       }
     } catch (e) {

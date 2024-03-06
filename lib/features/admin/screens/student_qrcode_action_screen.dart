@@ -1,5 +1,6 @@
 import 'dart:convert';
-
+import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_3/config/colors/app_colors.dart';
@@ -7,23 +8,44 @@ import 'package:flutter_application_3/config/images/app_images.dart';
 import 'package:flutter_application_3/features/auth/providers/auth_state_notifier_provider.dart';
 import 'package:flutter_application_3/models/student_model.dart';
 import 'package:flutter_application_3/shared/widgets/primary_button.dart';
+import 'package:flutter_application_3/shared/widgets/snack_bar.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import 'package:screenshot/screenshot.dart';
+import 'package:share_plus/share_plus.dart';
 
-class StudentQRcodeActionScreen extends ConsumerWidget {
+class StudentQRcodeActionScreen extends ConsumerStatefulWidget {
   final Student student;
 
   const StudentQRcodeActionScreen({super.key, required this.student});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<StudentQRcodeActionScreen> createState() =>
+      _StudentQRcodeActionScreenState();
+}
+
+class _StudentQRcodeActionScreenState
+    extends ConsumerState<StudentQRcodeActionScreen> {
+  Uint8List? _imageFile;
+//Create an instance of ScreenshotController
+  ScreenshotController screenshotController = ScreenshotController();
+
+  Future<bool> requestStoragePermission() async {
+    final status = await Permission.storage.request();
+    return status == PermissionStatus.granted;
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final userData = {
-      "firstName": student.firstName,
-      "lastName": student.lastName,
-      "matricNo": student.matricNo,
-      "department": student.department,
+      "firstName": widget.student.firstName,
+      "lastName": widget.student.lastName,
+      "matricNo": widget.student.matricNo,
+      "department": widget.student.department,
     };
     final authState = ref.watch(authStateNotifierProvider);
 
@@ -58,9 +80,12 @@ class StudentQRcodeActionScreen extends ConsumerWidget {
               margin: EdgeInsets.only(top: 30.h),
               width: 247.w,
               height: 273.h,
-              child: QrImageView(
-                data: jsonEncode(userData),
-                version: QrVersions.auto,
+              child: Screenshot(
+                controller: screenshotController,
+                child: QrImageView(
+                  data: jsonEncode(userData),
+                  version: QrVersions.auto,
+                ),
               ),
             ),
             SizedBox(height: 36.h),
@@ -77,41 +102,59 @@ class StudentQRcodeActionScreen extends ConsumerWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    SvgPicture.asset(
-                      AppImages.share,
-                      height: 41.h,
-                      width: 41.h,
-                    ),
-                    Text(
-                      "Share",
-                      style: TextStyle(
-                        fontSize: 22.spMin,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.primary,
-                      ),
-                    )
-                  ],
+                _actionButton(
+                  AppImages.share,
+                  "Share",
+                  onTap: () async {
+                    if (!await requestStoragePermission()) {
+                      return; // Handle permission denial gracefully
+                    }
+                    // take screenshot
+                    screenshotController.capture().then((image) async {
+                      //Capture Done
+                      setState(() {
+                        _imageFile = image;
+                      });
+
+                      /// share image file
+                      final directory =
+                          await getApplicationDocumentsDirectory();
+                      final imagePath =
+                          await File('${directory.path}/image.png').create();
+                      await imagePath.writeAsBytes(image!);
+
+                      /// Share Plugin
+                      await Share.shareXFiles([XFile(imagePath.path)]);
+                    }).catchError((onError) {
+                      print(onError);
+                    });
+                  },
                 ),
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    SvgPicture.asset(
-                      AppImages.download,
-                      height: 41.h,
-                      width: 41.h,
-                    ),
-                    Text(
-                      "Download",
-                      style: TextStyle(
-                        fontSize: 22.spMin,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.primary,
-                      ),
-                    )
-                  ],
+                _actionButton(
+                  AppImages.download,
+                  "Download",
+                  onTap: () async {
+                    if (Platform.isAndroid) {
+                      if (!await requestStoragePermission()) {
+                        openAppSettings();
+                        return; // Handle permission denial gracefully
+                      }
+                      screenshotController.capture().then((image) async {
+                        //Capture Done
+                        setState(() {
+                          _imageFile = image;
+                        });
+
+                        final imagePath =
+                            await File('/storage/emulated/0/image.png')
+                                .create();
+                        await imagePath.writeAsBytes(image!);
+                        displaySnack(context, text: "Image downloaded");
+                      }).catchError((onError) {
+                        print(onError);
+                      });
+                    }
+                  },
                 )
               ],
             ),
@@ -128,6 +171,31 @@ class StudentQRcodeActionScreen extends ConsumerWidget {
             )
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _actionButton(String image, String title,
+      {required VoidCallback onTap}) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          SvgPicture.asset(
+            image,
+            height: 41.h,
+            width: 41.h,
+          ),
+          Text(
+            title,
+            style: TextStyle(
+              fontSize: 22.spMin,
+              fontWeight: FontWeight.w600,
+              color: AppColors.primary,
+            ),
+          )
+        ],
       ),
     );
   }

@@ -281,4 +281,52 @@ class LocalDatabaseClient {
     }
     return reports;
   }
+
+  static Future<List<Activity>> getAllACtivities() async {
+    final db = await LocalDatabaseClient.db();
+
+    final queryActivities = await db.query("activity");
+    final activities = queryActivities
+        .map(
+          (activity) => Activity.fromJson(activity),
+        )
+        .toList();
+    return activities;
+  }
+
+  static Future<List<Attendance>> getAllAttendances() async {
+    final db = await LocalDatabaseClient.db();
+
+    final queryActivities = await db.query("attendance");
+    final attendance = queryActivities
+        .map(
+          (attendance) => Attendance.fromJson(attendance),
+        )
+        .toList();
+    return attendance;
+  }
+
+  static Future<List<AttendanceStudent>> getAllAttendanceStudents() async {
+    final db = await LocalDatabaseClient.db();
+
+    final queryActivities = await db.query("attendance_student");
+    final attendanceStudents = queryActivities
+        .map(
+          (attStud) => AttendanceStudent.fromJson(attStud),
+        )
+        .toList();
+    return attendanceStudents;
+  }
+
+  static Future<List<Student>> getAllStudents() async {
+    final db = await LocalDatabaseClient.db();
+
+    final queryActivities = await db.query("student");
+    final students = queryActivities
+        .map(
+          (student) => Student.fromJson(student),
+        )
+        .toList();
+    return students;
+  }
 }
