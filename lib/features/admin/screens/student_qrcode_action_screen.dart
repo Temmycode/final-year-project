@@ -126,7 +126,7 @@ class _StudentQRcodeActionScreenState
                       /// Share Plugin
                       await Share.shareXFiles([XFile(imagePath.path)]);
                     }).catchError((onError) {
-                      print(onError);
+                      debugPrint(onError);
                     });
                   },
                 ),
@@ -149,9 +149,10 @@ class _StudentQRcodeActionScreenState
                             await File('/storage/emulated/0/image.png')
                                 .create();
                         await imagePath.writeAsBytes(image!);
+                        // ignore: use_build_context_synchronously
                         displaySnack(context, text: "Image downloaded");
                       }).catchError((onError) {
-                        print(onError);
+                        debugPrint(onError);
                       });
                     }
                   },

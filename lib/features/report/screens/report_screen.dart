@@ -8,7 +8,9 @@ import 'package:flutter_application_3/features/database/providers/get_report_for
 import 'package:flutter_application_3/shared/widgets/snack_bar.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:share_plus/share_plus.dart';
 
 class ReportScreen extends ConsumerWidget {
   final String title;
@@ -24,7 +26,10 @@ class ReportScreen extends ConsumerWidget {
   }
 
   Future<void> exportToCsv(
-      BuildContext context, List<Map<String, dynamic>> data) async {
+    BuildContext context,
+    List<Map<String, dynamic>> data,
+  ) async {
+    final time = TimeOfDay.now();
     if (Platform.isAndroid) {
       if (!await requestStoragePermission()) {
         return; // Handle permission denial gracefully
@@ -42,8 +47,8 @@ class ReportScreen extends ConsumerWidget {
       }
 
       // final directory = await getDownloadsDirectory();
-      final path = '/storage/emulated/0/Download/$title.csv';
-      // final path = '${directory!.path}$title.csv';
+      final path =
+          '/storage/emulated/0/Download/${title + time.toString()}.csv';
 
       final csv = const ListToCsvConverter().convert(csvData);
 
@@ -60,8 +65,34 @@ class ReportScreen extends ConsumerWidget {
         // ignore: use_build_context_synchronously
         displaySnack(context, text: e.toString());
       }
-    } else {
-      return;
+    } else if (Platform.isIOS) {
+      if (!await requestStoragePermission()) {
+        return; // Handle permission denial gracefully
+      }
+      try {
+        final List<String> columnNames =
+            data.isNotEmpty ? data.first.keys.toList() : [];
+
+        // Add headers as the first row
+        final List<List<dynamic>> csvData = [columnNames];
+
+        // Add data rows
+        for (final row in data) {
+          csvData.add(row.values.toList());
+        }
+        final csv = const ListToCsvConverter().convert(csvData);
+
+        /// share image file
+        final directory = await getApplicationDocumentsDirectory();
+        final csvPath = await File('${directory.path}/$title.csv').create();
+        await csvPath.writeAsString(csv);
+
+        /// Share Plugin
+        await Share.shareXFiles([XFile(csvPath.path)]);
+      } catch (e) {
+        debugPrint(e.toString());
+        return;
+      }
     }
   }
 
