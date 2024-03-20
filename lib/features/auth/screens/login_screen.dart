@@ -1,5 +1,9 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_application_3/config/colors/app_colors.dart';
 import 'package:flutter_application_3/features/auth/providers/auth_state_notifier_provider.dart';
+import 'package:flutter_application_3/features/auth/screens/forgot_password_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../shared/widgets/custom_textfield.dart';
@@ -57,10 +61,34 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     ],
                   ),
                 ),
+                Padding(
+                  padding: EdgeInsets.only(top: 20.h),
+                  child: Align(
+                    alignment: Alignment.centerRight,
+                    child: GestureDetector(
+                      onTap: () => Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => const ForgotPasswordScreen(),
+                        ),
+                      ),
+                      child: Text(
+                        "Forget Password?",
+                        style: TextStyle(
+                          color: AppColors.primary,
+                          fontWeight: FontWeight.w500,
+                          fontSize: 12.spMin,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
 
                 // the login button
                 Padding(
-                  padding: EdgeInsets.only(bottom: 5.h, top: 380.h),
+                  padding: EdgeInsets.only(
+                    bottom: 5.h,
+                    top: Platform.isIOS ? 330.h : 360.h,
+                  ),
                   child: Consumer(builder: (context, ref, child) {
                     final authState = ref.watch(authStateNotifierProvider);
                     return PrimaryButton(

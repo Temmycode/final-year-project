@@ -48,7 +48,17 @@ class AuthRepository {
 
       return userModel;
     } on FirebaseAuthException catch (e) {
-      _error = e.message!;
+      if (e.code == "invalid-email") {
+        _error = "Invalid Email";
+      } else if (e.code == "invalid-credential") {
+        _error = "Invalid Credential";
+      } else if (e.code == "user-not-found") {
+        _error = "User not found";
+      } else if (e.code == "wrong-password") {
+        _error = "Incorrect Password";
+      } else {
+        _error = e.code;
+      }
       return null;
     } catch (e) {
       debugPrint(e.toString());
@@ -97,8 +107,16 @@ class AuthRepository {
         return null;
       }
     } on FirebaseAuthException catch (e) {
-      _error = e.message!;
-      return null;
+      if (e.code == "email-already-in-use") {
+        _error = "This email is already in use";
+      } else if (e.code == "invalid-email") {
+        _error = "User a valid email address";
+      } else if (e.code == "weak-password") {
+        _error = "Use a stronger password";
+      } else {
+        _error = e.code;
+      }
+      throw FirebaseAuthException(code: e.code);
     } catch (e) {
       debugPrint(e.toString());
       _error = e.toString();
@@ -112,7 +130,7 @@ class AuthRepository {
       PreferenceService.clear();
       return true;
     } catch (e) {
-      debugPrint(e.toString());
+      _error = e.toString();
       return false;
     }
   }
@@ -171,6 +189,27 @@ class AuthRepository {
     } catch (e) {
       _error = e.toString();
       throw Exception();
+    }
+  }
+
+  Future<bool> forgotPassword(String email) async {
+    try {
+      await auth.sendPasswordResetEmail(email: email);
+      return true;
+    } on FirebaseAuthException catch (e) {
+      print(e);
+      if (e.code == "auth/invalid-email") {
+        _error = "Invalid email";
+      } else if (e.code == "auth/user-not-found") {
+        _error = "User does not exist";
+      } else {
+        _error = e.code;
+      }
+      return false;
+    } catch (e) {
+      print(e);
+      _error = e.toString();
+      return false;
     }
   }
 }

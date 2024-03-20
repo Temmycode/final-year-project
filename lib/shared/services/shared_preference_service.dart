@@ -24,12 +24,7 @@ class PreferenceService {
   static String get staffId => prefs.getString("staffId") ?? '';
 
   static void clear() {
-    // prefs.clear();
-    PreferenceService.isFirstLaunch = false;
-    PreferenceService.isloggedIn = false;
-    PreferenceService.userName = "";
-    PreferenceService.email = "";
-    PreferenceService.staffId = "";
+    prefs.clear();
   }
 
   static Future<void> init() async {

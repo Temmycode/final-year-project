@@ -38,7 +38,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             setState(() => isCloudLoading = true);
             LoadingScreen.instance().show(context: context);
             final activities = await LocalDatabaseClient.getAllACtivities();
-            print(activities);
             final attendances = await LocalDatabaseClient.getAllAttendances();
             final attendanceStudents =
                 await LocalDatabaseClient.getAllAttendanceStudents();
@@ -147,6 +146,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             ],
           ),
         ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () async {
+          ref.read(authStateNotifierProvider.notifier).logout(context);
+        },
+        child: const Icon(Icons.logout),
       ),
     );
   }

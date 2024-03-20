@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart'
     show BuildContext, Navigator, MaterialPageRoute;
+import 'package:flutter_application_3/config/colors/app_colors.dart';
 import 'package:flutter_application_3/features/admin/screens/admin_actions_screen.dart';
+import 'package:flutter_application_3/features/auth/screens/login_screen.dart';
 import 'package:flutter_application_3/features/home/screens/home_screen.dart';
+import 'package:flutter_application_3/helpers/loading_screen.dart';
 import 'package:flutter_application_3/models/auth_state.dart';
 import 'package:flutter_application_3/models/user_model.dart';
 import 'package:flutter_application_3/repositories/auth_repository.dart';
@@ -42,7 +45,7 @@ class AuthStateNotifier extends StateNotifier<AuthState> {
       // call the function for the show snackbar ...
 
       // ignore: use_build_context_synchronously
-      displaySnack(context, text: AuthRepository.error);
+      displaySnack(context, text: AuthRepository.error, color: AppColors.red1);
     } else if (user.isAdmin) {
       // ignore: use_build_context_synchronously
       Navigator.pushAndRemoveUntil(
@@ -86,14 +89,47 @@ class AuthStateNotifier extends StateNotifier<AuthState> {
       // call the function for the show snackbar ...
 
       // ignore: use_build_context_synchronously
-      displaySnack(context, text: AuthRepository.error);
+      displaySnack(context, text: AuthRepository.error, color: AppColors.red1);
     }
   }
 
-  Future<void> logout() async {
+  Future<void> logout(BuildContext context) async {
     state = state.copyIsLoading(isLoading: true);
-    await repository.logout();
-    state = const AuthState(user: null, isLoading: false);
+    LoadingScreen.instance().show(context: context);
+    final result = await repository.logout();
+    if (result == false) {
+      // ignore: use_build_context_synchronously
+      displaySnack(context, text: AuthRepository.error, color: AppColors.red1);
+    } else {
+      // ignore: use_build_context_synchronously
+      displaySnack(context, text: "Successfully logged out");
+
+      // push to the login screen
+      // ignore: use_build_context_synchronously
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (context) => const LoginScreen(),
+        ),
+      );
+    }
+    state = state.copyIsLoading(isLoading: false);
+    LoadingScreen.instance().hide();
+  }
+
+  Future<void> forgotPassword(BuildContext context, String email) async {
+    state = state.copyIsLoading(isLoading: true);
+    final result = await repository.forgotPassword(email);
+    state = state.copyIsLoading(isLoading: false);
+    if (result == false) {
+      // ignore: use_build_context_synchronously
+      displaySnack(context, text: AuthRepository.error);
+    } else {
+      // ignore: use_build_context_synchronously
+      displaySnack(
+        context,
+        text: "Password reset email sent. Check your inbox!",
+      );
+    }
   }
 
   Future<void> updateUserDetails(UserModel user) async {
