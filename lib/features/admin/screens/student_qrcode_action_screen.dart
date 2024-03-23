@@ -119,8 +119,9 @@ class _StudentQRcodeActionScreenState
                       /// share image file
                       final directory =
                           await getApplicationDocumentsDirectory();
-                      final imagePath =
-                          await File('${directory.path}/image.png').create();
+                      final imagePath = await File(
+                        '${directory.path}/${widget.student.firstName} ${widget.student.lastName}.png',
+                      ).create();
                       await imagePath.writeAsBytes(image!);
 
                       /// Share Plugin
@@ -145,9 +146,9 @@ class _StudentQRcodeActionScreenState
                           _imageFile = image;
                         });
 
-                        final imagePath =
-                            await File('/storage/emulated/0/image.png')
-                                .create();
+                        final imagePath = await File(
+                          '/storage/emulated/0/${widget.student.firstName} ${widget.student.lastName}.png',
+                        ).create();
                         await imagePath.writeAsBytes(image!);
                         // ignore: use_build_context_synchronously
                         displaySnack(context, text: "Image downloaded");

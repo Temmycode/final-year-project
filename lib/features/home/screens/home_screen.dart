@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_3/cloud/services/cloud_serives.dart';
+import 'package:flutter_application_3/config/colors/app_colors.dart';
 import 'package:flutter_application_3/config/images/app_images.dart';
 import 'package:flutter_application_3/features/auth/providers/auth_state_notifier_provider.dart';
 import 'package:flutter_application_3/features/database/local_database_client.dart';
@@ -56,12 +57,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 );
               } else {
                 // ignore: use_build_context_synchronously
-                displaySnack(context, text: "No Entry in your database yet");
+                displaySnack(
+                  context,
+                  text: "No Entry in your database yet",
+                  color: AppColors.red1,
+                );
               }
             } catch (e) {
               // ignore: use_build_context_synchronously
               displaySnack(context, text: e.toString());
-              debugPrint(e.toString());
             } finally {
               setState(() => isCloudLoading = false);
               LoadingScreen.instance().hide();
@@ -149,7 +153,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
-          ref.read(authStateNotifierProvider.notifier).logout(context);
+          await ref.read(authStateNotifierProvider.notifier).logout(context);
         },
         child: const Icon(Icons.logout),
       ),

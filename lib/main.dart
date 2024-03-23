@@ -49,7 +49,6 @@ class MyApp extends StatelessWidget {
         ),
         home: Consumer(builder: (context, ref, child) {
           final isLoggedIn = ref.watch(isLoggedInProvider);
-
           if (isLoggedIn) {
             final currentUser = ref.watch(authStateNotifierProvider).user!;
             if (currentUser.isAdmin) {

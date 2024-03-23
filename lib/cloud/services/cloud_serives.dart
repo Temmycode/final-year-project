@@ -111,7 +111,8 @@ class CloudServices {
               imageUrl: activity.imageUrl,
               staffId: staffId,
               createdAt: activity.createdAt);
-          await firestore.collection('activities').add(newActivity.toJson());
+          await firestore.collection('activities').add(newActivity
+              .toJson()); // creating a new activity and sending it to the cloud
         }
       }
 
