@@ -43,6 +43,8 @@ class AuthRepository {
           await CloudServices.getDataFromCloudAndBackupToLocalStorage(
             userModel.staffId,
           ).whenComplete(() => PreferenceService.isFirstLaunch = false);
+        } else {
+          PreferenceService.isFirstLaunch = false;
         }
       }
 

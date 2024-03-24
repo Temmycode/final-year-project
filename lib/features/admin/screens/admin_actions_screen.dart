@@ -128,6 +128,12 @@ class AdminActionsScreen extends ConsumerWidget {
           );
         }),
       ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () async {
+          await ref.read(authStateNotifierProvider.notifier).logout(context);
+        },
+        child: const Icon(Icons.logout),
+      ),
     );
   }
 }
