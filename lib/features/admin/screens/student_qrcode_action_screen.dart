@@ -82,9 +82,13 @@ class _StudentQRcodeActionScreenState
               height: 273.h,
               child: Screenshot(
                 controller: screenshotController,
-                child: QrImageView(
-                  data: jsonEncode(userData),
-                  version: QrVersions.auto,
+                child: Container(
+                  color: Colors.white,
+                  child: QrImageView(
+                    backgroundColor: Colors.white,
+                    data: jsonEncode(userData),
+                    version: QrVersions.auto,
+                  ),
                 ),
               ),
             ),
@@ -109,55 +113,60 @@ class _StudentQRcodeActionScreenState
                     if (!await requestStoragePermission()) {
                       return; // Handle permission denial gracefully
                     }
-                    // take screenshot
-                    screenshotController.capture().then((image) async {
-                      //Capture Done
-                      setState(() {
-                        _imageFile = image;
-                      });
 
-                      /// share image file
-                      final directory =
-                          await getApplicationDocumentsDirectory();
-                      final imagePath = await File(
-                        '${directory.path}/${widget.student.firstName} ${widget.student.lastName}.png',
-                      ).create();
-                      await imagePath.writeAsBytes(image!);
+                    await screenshotController
+                        .capture(delay: const Duration(milliseconds: 10))
+                        .then(
+                      (image) async {
+                        if (image != null) {
+                          final directory =
+                              await getApplicationDocumentsDirectory();
+                          final imagePath = await File(
+                                  '${directory.path}/${widget.student.firstName} ${widget.student.lastName}.png')
+                              .create();
+                          await imagePath.writeAsBytes(image);
 
-                      /// Share Plugin
-                      await Share.shareXFiles([XFile(imagePath.path)]);
-                    }).catchError((onError) {
-                      debugPrint(onError);
-                    });
+                          await Share.shareXFiles([XFile(imagePath.path)]);
+                        }
+                      },
+                    );
                   },
                 ),
-                _actionButton(
-                  AppImages.download,
-                  "Download",
-                  onTap: () async {
-                    if (Platform.isAndroid) {
-                      if (!await requestStoragePermission()) {
-                        openAppSettings();
-                        return; // Handle permission denial gracefully
-                      }
-                      screenshotController.capture().then((image) async {
-                        //Capture Done
-                        setState(() {
-                          _imageFile = image;
-                        });
+                Platform.isAndroid
+                    ? _actionButton(
+                        AppImages.download,
+                        "Download",
+                        onTap: () async {
+                          if (Platform.isAndroid) {
+                            if (!await requestStoragePermission()) {
+                              openAppSettings();
+                              return; // Handle permission denial gracefully
+                            }
 
-                        final imagePath = await File(
-                          '/storage/emulated/0/${widget.student.firstName} ${widget.student.lastName}.png',
-                        ).create();
-                        await imagePath.writeAsBytes(image!);
-                        // ignore: use_build_context_synchronously
-                        displaySnack(context, text: "Image downloaded");
-                      }).catchError((onError) {
-                        debugPrint(onError);
-                      });
-                    }
-                  },
-                )
+                            final image = await screenshotController.capture();
+                            if (image != null) {
+                              final path =
+                                  '/storage/emulated/0/Download/${widget.student.firstName} ${widget.student.lastName}.png';
+
+                              await File(path).writeAsBytes(image);
+
+                              // ignore: use_build_context_synchronously
+                              displaySnack(
+                                context,
+                                text:
+                                    "Image downloaded to your downloads folder",
+                              );
+                            } else {
+                              // ignore: use_build_context_synchronously
+                              displaySnack(context,
+                                  text: "An error occurred",
+                                  color: AppColors.red1);
+                              return;
+                            }
+                          }
+                        },
+                      )
+                    : Container()
               ],
             ),
             const Spacer(),
@@ -177,9 +186,16 @@ class _StudentQRcodeActionScreenState
     );
   }
 
+  Widget qrCode(Map<String, dynamic> userData) {
+    return QrImageView(
+      data: jsonEncode(userData),
+      version: QrVersions.auto,
+    );
+  }
+
   Widget _actionButton(String image, String title,
       {required VoidCallback onTap}) {
-    return GestureDetector(
+    return InkWell(
       onTap: onTap,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
