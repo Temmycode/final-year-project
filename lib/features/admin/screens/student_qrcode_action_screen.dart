@@ -1,8 +1,10 @@
 import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
+import 'dart:ui' as ui;
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_application_3/config/colors/app_colors.dart';
 import 'package:flutter_application_3/config/images/app_images.dart';
 import 'package:flutter_application_3/features/auth/providers/auth_state_notifier_provider.dart';
@@ -12,6 +14,7 @@ import 'package:flutter_application_3/shared/widgets/snack_bar.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:image_gallery_saver/image_gallery_saver.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:qr_flutter/qr_flutter.dart';
@@ -37,6 +40,13 @@ class _StudentQRcodeActionScreenState
   Future<bool> requestStoragePermission() async {
     final status = await Permission.storage.request();
     return status == PermissionStatus.granted;
+  }
+
+  saveLocalImage(Uint8List image) async {
+    await ImageGallerySaver.saveImage(
+      image,
+      name: widget.student.firstName,
+    );
   }
 
   @override
@@ -145,17 +155,11 @@ class _StudentQRcodeActionScreenState
 
                             final image = await screenshotController.capture();
                             if (image != null) {
-                              final path =
-                                  '/storage/emulated/0/Download/${widget.student.firstName} ${widget.student.lastName}.png';
-
-                              await File(path).writeAsBytes(image);
-
+                              await saveLocalImage(image);
                               // ignore: use_build_context_synchronously
-                              displaySnack(
-                                context,
-                                text:
-                                    "Image downloaded to your downloads folder",
-                              );
+                              displaySnack(context,
+                                  text: "Qr Code save to your gallery",
+                                  color: AppColors.red1);
                             } else {
                               // ignore: use_build_context_synchronously
                               displaySnack(context,
